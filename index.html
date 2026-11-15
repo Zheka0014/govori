@@ -1164,7 +1164,7 @@ const live = {
   ws: null, ready: false, opening: false, userClosed: false, planned: false,
   models: MODEL_CHAIN.slice(), modelIx: 0, off: new Set(), handle: "", goAway: false,
   fails: 0, drops: 0, setupTimer: null, retryTimer: null, sentChunks: 0, dropped: 0, gotAudio: 0, turnOpen: false,
-  verIx: 0, everOpened: false, verSwitched: false,
+  verIx: 0, everOpened: false,
 };
 const currentModel = () => live.models[live.modelIx] || MODEL_CHAIN[0];
 
@@ -1237,10 +1237,15 @@ function connect() {
   const resumed = uses("resume") && !!live.handle;
   let opened = false;
   log("ws", "connecting " + WS_VERSIONS[live.verIx] + ", model " + currentModel() + (live.off.size ? ", without " + [...live.off].join("+") : "") + (resumed ? ", resuming" : session.recap ? ", with recap" : ""));
+  clearTimeout(live.setupTimer);
+  live.setupTimer = setTimeout(() => {
+    if (live.ws === ws && !opened) { log("ws", "no answer in 12 s"); try { ws.close(); } catch (e) { /* closing */ } }
+  }, 12000);
   ws.onopen = () => {
     if (live.ws !== ws) return;
     opened = true;
     live.everOpened = true;
+    clearTimeout(live.setupTimer);
     const msg = buildSetup();
     log("ws", "open, setup sent: " + Object.keys(msg.setup).join(","));
     ws.send(JSON.stringify(msg));
@@ -1281,11 +1286,18 @@ function retrySoon(ms) {
 function onClosed(code, reason, wasReady, opened) {
   if (!session || live.userClosed) { updateUI(); return; }
   const kind = classify(code, reason);
-  if (!opened && !live.everOpened && !live.verSwitched) {
-    live.verSwitched = true;
-    live.verIx = (live.verIx + 1) % WS_VERSIONS.length;
-    log("ws", "trying the other address, " + WS_VERSIONS[live.verIx]);
-    retrySoon(250);
+  if (!opened && !live.everOpened) {
+    /* Nothing has connected since the page was opened: it is the network or the address.
+       Take turns between the two addresses and give up after each has failed twice. */
+    live.fails++;
+    if (live.fails <= 3) {
+      live.verIx = (live.verIx + 1) % WS_VERSIONS.length;
+      log("ws", "trying the other address, " + WS_VERSIONS[live.verIx]);
+      retrySoon(300 * live.fails);
+      return;
+    }
+    live.verIx = 0;
+    lessonFailed("network");
     return;
   }
   if (live.planned) {
@@ -1295,7 +1307,8 @@ function onClosed(code, reason, wasReady, opened) {
   }
   if (kind === "key" || kind === "quota" || kind === "region") { lessonFailed(kind); return; }
   if (!wasReady) {
-    if (live.handle && kind !== "model" && kind !== "config") {
+    if (opened && live.handle && kind !== "model") {
+      /* Google took the connection but not the saved session: start a new one and remind the teacher where we were. */
       log("ws", "resume refused, starting a fresh connection");
       live.handle = "";
       session.recap = recapText();
@@ -1314,7 +1327,7 @@ function onClosed(code, reason, wasReady, opened) {
       return;
     }
     live.fails++;
-    if (live.fails <= 2) { retrySoon(900 * live.fails); return; }
+    if (live.fails <= 4) { retrySoon(900 * live.fails); return; }
     lessonFailed(kind === "busy" ? "busy" : code === 1006 || kind === "unknown" ? "network" : kind);
     return;
   }
@@ -1523,7 +1536,7 @@ async function startLesson(preset) {
     focus: (preset && preset.focus) || null, startedAt: Date.now(), started: false, paused: false, failed: "",
     exchanges: [], cur: null, recap: "", fixes: 0, newWords: 0,
   };
-  Object.assign(live, { modelIx: 0, handle: "", fails: 0, drops: 0, sentChunks: 0, dropped: 0, gotAudio: 0, verSwitched: false });
+  Object.assign(live, { modelIx: 0, handle: "", fails: 0, drops: 0, sentChunks: 0, dropped: 0, gotAudio: 0 });
   audio.dropUntilTurnEnd = false;
   log("app", "lesson: " + session.mode + "/" + session.level + ", headphones " + s.headphones + ", patience " + s.patience);
   try { ensureContext(); } catch (e) { log("audio", "no audio context: " + (e && e.message)); }
