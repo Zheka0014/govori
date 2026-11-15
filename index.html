@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Говори по-английски</title>
+<meta name="description" content="Голосовой учитель английского: живой разговор, исправления и объяснения по-русски.">
+<meta name="theme-color" content="#2b6a50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Говори">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap">
+<style>
+:root {
+  /* Layout: one ruled notebook page between a cover-coloured header and a talking dock.
+     Blue ink is the student, red pen is the teacher's marks, print is what the teacher says. */
+  --paper: #f7f8fc;
+  --panel: #ffffff;
+  --rule: #d6ddf0;
+  --margin-line: #e9909a;
+  --print: #1a2033;
+  --muted: #5b6583;
+  --ink: #2342b5;
+  --pen: #c61f3a;
+  --on-pen: #ffffff;
+  --accent: #2b6a50;
+  --on-accent: #f4f8f3;
+  --bar: #2b6a50;
+  --on-bar: #f1f6ef;
+  --line: #cbd3e8;
+  --wash: rgba(43, 106, 80, .11);
+  --font-body: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Literata", Georgia, "Times New Roman", serif;
+  --font-hand: "Caveat", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+  --lh: 34px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1b2824;
+    --panel: #22322d;
+    --rule: #283a34;
+    --margin-line: #8a4f57;
+    --print: #eceee6;
+    --muted: #9dafa6;
+    --ink: #a3c2ff;
+    --pen: #ff9a9a;
+    --on-pen: #2a1114;
+    --accent: #efd47c;
+    --on-accent: #1b2824;
+    --bar: #131c19;
+    --on-bar: #e7eadf;
+    --line: #3a514a;
+    --wash: rgba(239, 212, 124, .13);
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--print);
+  font: 400 16px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overflow: hidden;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button[disabled] { cursor: default; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 6px; }
+a { color: var(--ink); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ic { display: inline-flex; flex: none; }
+.ic svg { display: block; }
+
+.app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+
+/* ---------- header: the notebook cover ---------- */
+.top {
+  background: var(--bar);
+  color: var(--on-bar);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) calc(14px + env(safe-area-inset-right, 0px)) 8px calc(14px + env(safe-area-inset-left, 0px));
+}
+.brand { font: 600 18px/1.15 var(--font-display); margin: 0; }
+.lesson-chip { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; font-size: 13.5px; line-height: 1.3; }
+.top .spacer { flex: 1 1 0; }
+.bar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--on-bar) 34%, transparent);
+  color: var(--on-bar);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13.5px;
+  line-height: 1.2;
+}
+.bar-btn:hover { background: color-mix(in srgb, var(--on-bar) 13%, transparent); }
+.bar-btn .n { font-variant-numeric: tabular-nums; font-weight: 600; }
+.top :focus-visible { outline-color: var(--on-bar); }
+@media (max-width: 640px) {
+  .brand { font-size: 16px; }
+  .bar-btn { padding: 6px 8px; gap: 5px; }
+  .bar-btn .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .lesson-chip { order: 5; flex-basis: 100%; }
+}
+
+/* ---------- the page ---------- */
+.page {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background-color: var(--paper);
+  background-image: linear-gradient(to bottom, transparent calc(var(--lh) - 1px), var(--rule) calc(var(--lh) - 1px));
+  background-size: 100% var(--lh);
+  background-attachment: local;
+}
+.sheet {
+  --gutter: 64px;
+  position: relative;
+  max-width: 880px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 20px 20px 36px calc(var(--gutter) + 22px);
+}
+.sheet::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--gutter);
+  width: 2px;
+  background: var(--margin-line);
+}
+@media (max-width: 640px) {
+  .sheet { --gutter: 0px; padding-left: calc(18px + env(safe-area-inset-left, 0px)); padding-right: calc(18px + env(safe-area-inset-right, 0px)); }
+  .sheet::before { display: none; }
+}
+
+.eyebrow {
+  font: 600 11.5px/1.2 var(--font-body);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+/* ---------- setup ---------- */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px 20px 16px;
+  margin-bottom: 18px;
+}
+.card h1, .card h2 { font: 600 clamp(22px, 5.6vw, 30px)/1.15 var(--font-display); margin: 0 0 8px; text-wrap: balance; }
+.card h2 { font-size: clamp(20px, 5vw, 24px); }
+.lede { margin: 0 0 16px; max-width: 60ch; color: var(--muted); }
+.steps { margin: 0 0 16px; padding-left: 22px; max-width: 60ch; }
+.steps li { margin-bottom: 6px; }
+.steps b { font-weight: 600; }
+.keyrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.keyrow input {
+  flex: 1 1 220px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  padding: 11px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 15px;
+}
+.field-label { display: block; font: 600 13.5px/1.2 var(--font-body); margin-bottom: 6px; }
+.fine { margin: 10px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); max-width: 62ch; }
+.key-state { margin: 8px 0 0; font-size: 14.5px; line-height: 1.4; }
+.key-state.bad { color: var(--pen); }
+.key-ok { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0; }
+.key-ok b { font-weight: 600; }
+.last-note { font: 700 23px/1.25 var(--font-hand); color: var(--pen); margin: -4px 0 14px; }
+fieldset { border: 0; padding: 0; margin: 0 0 16px; min-width: 0; }
+legend { font: 600 13.5px/1.2 var(--font-body); padding: 0; margin-bottom: 8px; }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.opt {
+  position: relative;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 11px;
+  background: var(--paper);
+  cursor: pointer;
+}
+.opt input, .topic input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.opt b { display: block; font-weight: 600; font-size: 15px; }
+.opt small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 2px; }
+.opt.on, .topic.on { border-color: var(--accent); background: var(--wash); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt:focus-within, .topic:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+.topics { display: flex; flex-wrap: wrap; gap: 6px; }
+.topic {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: var(--paper);
+  font-size: 14.5px;
+  cursor: pointer;
+}
+.custom-topic {
+  display: block;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 440px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  padding: 9px 11px;
+}
+.check { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 12px; font-size: 15px; line-height: 1.4; }
+.check input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--accent); }
+.check small { display: block; color: var(--muted); font-size: 13px; }
+
+/* ---------- notebook entries ---------- */
+.dateline { font: 500 27px/var(--lh) var(--font-hand); color: var(--ink); text-align: center; margin: 0 0 var(--lh); }
+.entry { position: relative; margin: 0 0 22px; }
+.who {
+  font: 600 11px/1.2 var(--font-body);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 5px;
+}
+.mark {
+  position: absolute;
+  top: 12px;
+  left: calc(-1 * var(--gutter) - 22px);
+  width: var(--gutter);
+  text-align: center;
+  font: 700 36px/1 var(--font-hand);
+  color: var(--pen);
+  transform: rotate(-7deg);
+  pointer-events: none;
+}
+@media (max-width: 640px) { .mark { display: none; } }
+.said { font: 500 28px/var(--lh) var(--font-hand); color: var(--ink); margin: 0; overflow-wrap: anywhere; }
+.said del { text-decoration: line-through; text-decoration-color: var(--pen); text-decoration-thickness: 2px; }
+.verdict { font: 700 23px/1.25 var(--font-hand); color: var(--pen); margin: 4px 0 0; }
+.fix { margin-top: 4px; }
+.right { font: 400 21px/1.45 var(--font-display); margin: 0; overflow-wrap: anywhere; }
+.right ins {
+  text-decoration: underline;
+  text-decoration-color: var(--pen);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+  font-weight: 600;
+}
+.why { font-size: 15px; line-height: 1.5; color: var(--muted); margin: 4px 0 0; max-width: 62ch; }
+.say { margin: 0; max-width: 64ch; font-size: 16.5px; line-height: 1.6; overflow-wrap: anywhere; }
+.say .en { font: 400 21px/1.4 var(--font-display); }
+.say.cut::after { content: " …"; color: var(--muted); }
+.say.live::after { content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 6px; border-radius: 50%; background: var(--accent); animation: blink 1s infinite both; }
+@keyframes blink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+.words { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+.word {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  padding: 4px 12px;
+  font-size: 14.5px;
+}
+.word b { font: 600 15.5px/1.3 var(--font-display); }
+.word span { color: var(--muted); }
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--print);
+}
+.ghost:hover { border-color: var(--muted); }
+.ghost[disabled] { opacity: .5; }
+.icon-only { padding: 7px; }
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 11px 16px;
+  font-weight: 600;
+}
+.primary[disabled] { opacity: .5; }
+.sysline { margin: 0 0 22px; font-size: 14.5px; line-height: 1.45; color: var(--pen); max-width: 62ch; }
+
+/* ---------- talking dock ---------- */
+.dock {
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  padding: 10px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.dock-inner { max-width: 880px; margin: 0 auto; padding: 0 20px 0 86px; display: grid; gap: 9px; }
+@media (max-width: 640px) {
+  .dock-inner { padding: 0 calc(18px + env(safe-area-inset-right, 0px)) 0 calc(18px + env(safe-area-inset-left, 0px)); }
+}
+.notice { margin: 0; font-size: 14px; line-height: 1.4; color: var(--pen); }
+.state { display: flex; align-items: center; gap: 12px; min-height: 46px; }
+.orb {
+  --lvl: 0;
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--line);
+  color: var(--panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transform: scale(calc(1 + var(--lvl) * .55));
+  transition: transform .09s linear;
+}
+body[data-phase="listening"] .orb { background: var(--ink); color: var(--paper); }
+body[data-phase="listening"] .orb::after { border-color: color-mix(in srgb, var(--ink) 45%, transparent); }
+body[data-phase="teacher"] .orb { background: var(--accent); color: var(--on-accent); }
+body[data-phase="teacher"] .orb::after { border-color: color-mix(in srgb, var(--accent) 50%, transparent); animation: breathe 1.4s ease-in-out infinite; }
+body[data-phase="connecting"] .orb::after { border-color: var(--muted); border-top-color: transparent; animation: spin 1s linear infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(1.05); } 50% { transform: scale(1.3); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-text { min-width: 0; flex: 1; }
+.state-text b { display: block; font-weight: 600; font-size: 16.5px; line-height: 1.25; }
+.state-text span { display: block; font-size: 13.5px; line-height: 1.35; color: var(--muted); }
+.clock { font-variant-numeric: tabular-nums; font-size: 13.5px; color: var(--muted); }
+.quick { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.quick::-webkit-scrollbar { display: none; }
+.quick .ghost { flex: none; }
+.controls { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; }
+.main-btn {
+  position: relative;
+  flex: 1 1 170px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 8px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 600 17px/1.2 var(--font-body);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 62%, #000);
+}
+.main-btn[disabled] { opacity: .55; box-shadow: none; }
+.main-btn.alt { background: var(--pen); color: var(--on-pen); box-shadow: 0 2px 0 color-mix(in srgb, var(--pen) 62%, #000); }
+.side-btn {
+  flex: 1 1 110px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: 15px;
+  line-height: 1.2;
+}
+.side-btn:hover { border-color: var(--muted); }
+.typebar { display: flex; gap: 8px; align-items: flex-end; }
+.typebar textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  padding: 9px 12px;
+  font-size: 16px;
+  line-height: 1.4;
+  max-height: 96px;
+}
+.typebar .ghost { min-height: 42px; padding: 8px 14px; }
+
+/* ---------- dialogs ---------- */
+dialog {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--print);
+  padding: 0;
+  width: min(560px, calc(100% - 28px));
+  max-height: 86%;
+}
+dialog[open] { display: flex; flex-direction: column; }
+dialog::backdrop { background: rgba(10, 14, 24, .5); }
+.dlg-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px 8px; }
+.dlg-head h2 { font: 600 21px/1.2 var(--font-display); margin: 0; }
+.dlg-body { padding: 4px 18px 14px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.dlg-foot { padding: 12px 18px 16px; border-top: 1px solid var(--line); }
+.dlg-note { margin: 0 0 12px; font-size: 14.5px; color: var(--muted); max-width: 60ch; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.row { display: flex; align-items: flex-start; gap: 8px; border-bottom: 1px solid var(--rule); padding: 6px 0; }
+.row-main { flex: 1; min-width: 0; }
+.row-main b { font: 600 18px/1.3 var(--font-display); margin-right: 8px; }
+.row-main > span { color: var(--muted); font-size: 14.5px; }
+.row .said { font-size: 24px; line-height: 1.2; }
+.row .right { font-size: 18px; }
+.row .why { font-size: 14px; }
+.field { display: grid; gap: 6px; margin: 0 0 16px; }
+.field label { font-weight: 600; font-size: 14.5px; }
+.field select { width: 100%; max-width: 380px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); padding: 9px; font-size: 16px; }
+.inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.journal {
+  margin: 0 0 10px;
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  padding: 8px 10px;
+  font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body data-phase="setup">
+<div class="app">
+  <header class="top">
+    <p class="brand">Говори по-английски</p>
+    <div class="lesson-chip" id="lesson-chip" hidden>
+      <span id="lesson-label"></span>
+    </div>
+    <span class="spacer"></span>
+    <button type="button" class="bar-btn" id="btn-words" data-icon="book"><span class="lbl">Словарь</span> <span class="n" id="n-words">0</span></button>
+    <button type="button" class="bar-btn" id="btn-mistakes" data-icon="pen"><span class="lbl">Ошибки</span> <span class="n" id="n-mistakes">0</span></button>
+    <button type="button" class="bar-btn" id="btn-settings" data-icon="tune"><span class="lbl">Настройки</span></button>
+  </header>
+
+  <main class="page" id="feed">
+    <div class="sheet">
+      <div id="setup">
+        <section class="card" id="key-card" aria-labelledby="key-title">
+          <p class="eyebrow">Сначала один раз</p>
+          <h2 id="key-title">Бесплатный ключ Google</h2>
+          <div id="key-new">
+            <p class="lede">Учитель говорит через Gemini от Google. Для этого нужен личный ключ: он бесплатный и создаётся за минуту.</p>
+            <ol class="steps">
+              <li>Открой <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> и войди в аккаунт Google.</li>
+              <li>Нажми кнопку <b>Create API key</b>. Если спросит про проект, выбери любой или создай новый.</li>
+              <li>Скопируй ключ кнопкой <b>Copy</b> и вставь его в поле ниже.</li>
+            </ol>
+            <label class="field-label" for="key-input">Ключ</label>
+            <div class="keyrow">
+              <input id="key-input" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Вставь ключ сюда">
+              <button type="button" class="primary" id="btn-key-save">Сохранить ключ</button>
+            </div>
+            <p class="key-state" id="key-state" role="status"></p>
+            <p class="fine">Ключ хранится только в этом браузере на этом устройстве и уходит только в Google. На бесплатном уровне Google использует разговоры для улучшения своих продуктов.</p>
+          </div>
+          <p class="key-ok" id="key-ok" hidden><b>Ключ сохранён на этом устройстве.</b> <button type="button" class="ghost" id="btn-key-change">Заменить ключ</button></p>
+        </section>
+
+        <section class="card" aria-labelledby="setup-title">
+          <p class="eyebrow">Тетрадь для устных занятий</p>
+          <h1 id="setup-title">Живой разговор с учителем английского</h1>
+          <p class="lede">Говоришь вслух, учитель сразу отвечает голосом, поправляет ошибки и произношение и объясняет по-русски.</p>
+          <p class="last-note" id="last-note" hidden></p>
+          <fieldset>
+            <legend>Мой уровень</legend>
+            <div class="opts" id="opts-level"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Что делаем</legend>
+            <div class="opts" id="opts-mode"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Тема</legend>
+            <div class="topics" id="opts-topic"></div>
+            <label class="sr" for="custom-topic">Своя тема</label>
+            <input class="custom-topic" id="custom-topic" type="text" maxlength="100" autocomplete="off">
+          </fieldset>
+          <label class="check"><input type="checkbox" id="set-headphones"> <span>Я в наушниках<small>Тогда учителя можно перебивать голосом. Без наушников он не слушает, пока говорит сам, чтобы не слышать себя.</small></span></label>
+        </section>
+      </div>
+
+      <div id="log" hidden></div>
+    </div>
+  </main>
+
+  <footer class="dock">
+    <div class="dock-inner">
+      <p class="notice" id="notice" role="status" hidden></p>
+      <div class="state" id="state" hidden>
+        <span class="orb" id="orb" aria-hidden="true"></span>
+        <p class="state-text" aria-live="polite"><b id="state-title"></b><span id="state-hint"></span></p>
+        <span class="clock" id="clock"></span>
+      </div>
+      <div class="quick" id="quick" hidden>
+        <button type="button" class="ghost" data-say="Я не понимаю. Объясни, пожалуйста, проще и по-русски, что мне сейчас нужно сказать.">Не понимаю</button>
+        <button type="button" class="ghost" data-say="Повтори, пожалуйста, последнюю английскую фразу ещё раз, медленно.">Повтори медленно</button>
+        <button type="button" class="ghost" data-say="Говори, пожалуйста, медленнее и короче.">Говори медленнее</button>
+        <button type="button" class="ghost" data-say="Как это сказать по-английски? Помоги мне с ответом.">Подскажи ответ</button>
+      </div>
+      <div class="controls">
+        <button type="button" class="main-btn" id="btn-main"></button>
+        <button type="button" class="side-btn" id="btn-pause" hidden></button>
+        <button type="button" class="side-btn" id="btn-end" hidden></button>
+      </div>
+      <form class="typebar" id="typebar" hidden>
+        <label class="sr" for="type-input">Напечатать учителю</label>
+        <textarea id="type-input" rows="1" placeholder="Можно и напечатать"></textarea>
+        <button type="submit" class="ghost" id="btn-send">Отправить</button>
+      </form>
+    </div>
+  </footer>
+</div>
+
+<dialog id="dlg-words" aria-labelledby="dlg-words-title">
+  <div class="dlg-head">
+    <h2 id="dlg-words-title">Мой словарь</h2>
+    <button type="button" class="ghost icon-only" data-close data-icon="close" aria-label="Закрыть"></button>
+  </div>
+  <div class="dlg-body">
+    <p class="dlg-note" id="words-note"></p>
+    <ul class="list" id="words-list"></ul>
+  </div>
+  <div class="dlg-foot">
+    <button type="button" class="primary" id="btn-train-words">Тренировать эти слова</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-mistakes" aria-labelledby="dlg-mistakes-title">
+  <div class="dlg-head">
+    <h2 id="dlg-mistakes-title">Мои ошибки</h2>
+    <button type="button" class="ghost icon-only" data-close data-icon="close" aria-label="Закрыть"></button>
+  </div>
+  <div class="dlg-body">
+    <p class="dlg-note" id="mistakes-note"></p>
+    <ul class="list" id="mistakes-list"></ul>
+  </div>
+  <div class="dlg-foot">
+    <button type="button" class="primary" id="btn-train-mistakes">Отработать ошибки</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-settings" aria-labelledby="dlg-settings-title">
+  <div class="dlg-head">
+    <h2 id="dlg-settings-title">Настройки</h2>
+    <button type="button" class="ghost icon-only" data-close data-icon="close" aria-label="Закрыть"></button>
+  </div>
+  <div class="dlg-body">
+    <div class="field">
+      <label for="set-voice">Голос учителя</label>
+      <select id="set-voice"></select>
+    </div>
+    <div class="field">
+      <label for="set-patience">Сколько ждать, пока ты думаешь</label>
+      <select id="set-patience">
+        <option value="800">Недолго: отвечать сразу после фразы</option>
+        <option value="1300">Обычно: около секунды тишины</option>
+        <option value="2000">Долго: две секунды тишины</option>
+        <option value="3000">Очень долго: три секунды тишины</option>
+      </select>
+    </div>
+    <label class="check"><input type="checkbox" id="set-headphones-2"> <span>Я в наушниках<small>Учителя можно перебивать голосом.</small></span></label>
+    <label class="check"><input type="checkbox" id="set-notes"> <span>Вести конспект<small>Учитель записывает ошибки и новые слова в тетрадь.</small></span></label>
+    <p class="dlg-note">Новые настройки голоса и ожидания начнут действовать со следующего занятия.</p>
+    <hr>
+    <div class="field">
+      <label>Ключ Google</label>
+      <div class="inline">
+        <span id="key-mask"></span>
+        <button type="button" class="ghost" id="btn-key-forget">Удалить ключ с этого устройства</button>
+      </div>
+    </div>
+    <hr>
+    <div class="field">
+      <label for="journal">Журнал связи</label>
+      <pre class="journal" id="journal" tabindex="0"></pre>
+      <div class="inline">
+        <button type="button" class="ghost" id="btn-copy-journal">Скопировать журнал</button>
+        <span class="fine" id="copy-state" role="status" style="margin:0"></span>
+      </div>
+      <p class="fine">Если что-то не работает, скопируй журнал и пришли его: по нему видно, на каком шаге случился сбой. Ключа в журнале нет.</p>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+"use strict";
+
+/* ================= helpers ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const clip = (s, n = 160) => String(s == null ? "" : s).replace(/[\r\n"]+/g, " ").trim().slice(0, n);
+
+function h(tag, props, ...kids) {
+  const n = document.createElement(tag);
+  if (props) for (const k in props) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === "class") n.className = v;
+    else if (k.slice(0, 2) === "on" && typeof v === "function") n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? "" : String(v));
+  }
+  for (const kid of kids.flat(Infinity)) {
+    if (kid == null || kid === false) continue;
+    n.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  }
+  return n;
+}
+
+const ICON_PATHS = {
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="2"/>',
+  pause: '<path d="M9 6v12M15 6v12"/>',
+  sound: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/>',
+  tune: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  book: '<path d="M6 4.5h9.5A2.5 2.5 0 0 1 18 7v12.5H8.5A2.5 2.5 0 0 1 6 17V4.5z"/><path d="M6 17a2.5 2.5 0 0 1 2.5-2.5H18"/>',
+  pen: '<path d="M4.5 19.5l1-4L16.8 4.2a1.9 1.9 0 0 1 2.7 2.7L8.5 18.5l-4 1z"/>',
+  play: '<path d="M8 5.5v13l10-6.5-10-6.5z"/>',
+  hand: '<path d="M8 12V6.5a1.5 1.5 0 0 1 3 0V11m0-5.5v-1a1.5 1.5 0 0 1 3 0V11m0-5a1.5 1.5 0 0 1 3 0v8.5A5.5 5.5 0 0 1 11.5 20h-.4a5 5 0 0 1-4-2l-3-4.2a1.5 1.5 0 0 1 2.4-1.8L8 13.5"/>',
+};
+function icon(name, size = 20) {
+  const span = document.createElement("span");
+  span.className = "ic";
+  span.setAttribute("aria-hidden", "true");
+  span.innerHTML = '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (ICON_PATHS[name] || "") + "</svg>";
+  return span;
+}
+document.querySelectorAll("[data-icon]").forEach((el) => el.prepend(icon(el.dataset.icon, 18)));
+
+/* ================= journal (never contains the key) ================= */
+const journal = [];
+const t0 = Date.now();
+function log(tag, text) {
+  const line = ((Date.now() - t0) / 1000).toFixed(1).padStart(7) + "  " + tag.padEnd(6) + " " + String(text).slice(0, 400);
+  journal.push(line);
+  if (journal.length > 250) journal.shift();
+  const box = document.getElementById("journal");
+  if (box && box.offsetParent) { box.textContent = journal.join("\n"); box.scrollTop = box.scrollHeight; }
+}
+
+/* ================= catalogue ================= */
+const LEVELS = {
+  a0: {
+    name: "С нуля",
+    desc: "Почти ничего не знаю. Учитель говорит по-русски и даёт фразы по одной.",
+    prompt: "Absolute beginner: knows almost no English and will not understand English questions. Speak Russian almost all the time. Teach phrase by phrase: say one short English phrase (2 to 6 very common words), give its meaning in Russian, and ask the student to repeat it. Keep reusing earlier phrases in tiny exchanges. Never ask a question in English that uses words you have not taught yet.",
+  },
+  a1: {
+    name: "Начинающий",
+    desc: "Знаю простые слова. Вопросы по-английски, объяснения по-русски.",
+    prompt: "Beginner (A1): knows basic words and simple phrases. Give instructions and explanations in Russian. Ask simple questions in English (up to 8 common words) and expect short English answers. If the student does not understand an English question, repeat it slower, then translate it into Russian.",
+  },
+  a2: {
+    name: "Могу объясниться",
+    desc: "Строю фразы, но с ошибками. Учитель говорит на простом английском.",
+    prompt: "Elementary (A2): builds simple sentences, with mistakes. Speak simple, clear English most of the time: short sentences, common words. Switch to Russian only to explain a mistake or when the student is lost.",
+  },
+  b1: {
+    name: "Говорю свободнее",
+    desc: "Нужны практика и точность. Учитель говорит почти только по-английски.",
+    prompt: "Intermediate (B1): speaks with mistakes and a limited vocabulary. Speak natural but clear English. Use Russian only for a one-sentence explanation of a mistake when it really helps. Ask for fuller answers and follow up on what they say. If a sentence is correct but unnatural, offer the more natural version.",
+  },
+};
+const MODES = {
+  lesson: {
+    name: "Урок",
+    desc: "Новые фразы по теме: послушать, повторить, перевести, собрать диалог.",
+    topics: "general",
+    prompt: (t) => 'Structured lesson on the topic "' + t + '". First greet the student and say in one sentence what you will learn today. Then teach four to six useful phrases for this topic one at a time: say the phrase, give its meaning, have the student repeat it. Then ask the student to translate short Russian sentences that use these phrases. Finish with a short dialogue that uses everything. Move on only when the student has said the current phrase acceptably.',
+  },
+  talk: {
+    name: "Разговор",
+    desc: "Живая беседа: учитель спрашивает, ты отвечаешь, он поправляет.",
+    topics: "general",
+    prompt: (t) => 'Free conversation about "' + t + '". Greet the student, then ask about their own life, experience and opinions on this topic, react to what they say and keep the conversation moving. Correct as you go.',
+  },
+  role: {
+    name: "Ситуация",
+    desc: "Сценка из жизни: учитель играет официанта, продавца, администратора.",
+    topics: "scenes",
+    prompt: (t) => 'Role-play of a real-life situation: "' + t + '". You play the other person in the scene (for example the waiter, the receptionist, the seller, the driver); the student is the customer or visitor. Start by setting the scene in one Russian sentence, then stay in character in English. Step out of character only to correct or help.',
+  },
+  drill: {
+    name: "Перевод",
+    desc: "Учитель говорит фразу по-русски, ты говоришь её по-английски.",
+    topics: "general",
+    prompt: (t) => 'Translation drill on "' + t + '". Say one short Russian sentence at a time, starting with the words "Скажи по-английски", and wait for the student\'s English version. Check it, then give the next sentence, slowly making them harder. Never say the English answer before the student has tried.',
+  },
+};
+const TOPICS = {
+  general: ["Знакомство", "О себе и семье", "Еда и напитки", "Путешествия", "Работа и дела", "Хобби и спорт", "Город и дорога", "Время, дни и числа"],
+  scenes: ["В кафе", "В аэропорту", "В отеле", "В магазине", "В такси", "Спросить дорогу", "Аренда жилья", "Знакомство с новым человеком"],
+};
+const VOICES = { Kore: "Kore, женский, ровный", Aoede: "Aoede, женский, лёгкий", Leda: "Leda, женский, молодой", Puck: "Puck, мужской, бодрый", Charon: "Charon, мужской, спокойный", Orus: "Orus, мужской, твёрдый" };
+
+const TOOLS = [{
+  functionDeclarations: [
+    {
+      name: "note_mistake",
+      behavior: "NON_BLOCKING",
+      description: "Writes one correction into the student's notebook. Call it every time you correct the student's English: a grammar mistake, a wrong word, or a mispronounced word. Never mention this tool or the notebook aloud.",
+      parameters: {
+        type: "OBJECT",
+        properties: {
+          kind: { type: "STRING", description: "One of: grammar, word, pronunciation." },
+          said: { type: "STRING", description: "What the student actually said, in English, as you heard it." },
+          correct: { type: "STRING", description: "The correct English sentence or word." },
+          why: { type: "STRING", description: "One short sentence in Russian explaining the correction." },
+        },
+        required: ["said", "correct", "why"],
+      },
+    },
+    {
+      name: "note_word",
+      behavior: "NON_BLOCKING",
+      description: "Adds one new English word or phrase that you have just taught to the student's vocabulary list. Never mention this tool or the list aloud.",
+      parameters: {
+        type: "OBJECT",
+        properties: {
+          en: { type: "STRING", description: "The English word or phrase." },
+          ru: { type: "STRING", description: "Its Russian translation." },
+        },
+        required: ["en", "ru"],
+      },
+    },
+  ],
+}];
+
+function buildInstruction(s, withTools, recap) {
+  let plan = MODES[s.mode].prompt(clip(s.topic, 120));
+  if (s.focus && s.focus.kind === "mistakes") {
+    plan += "\nThis drill must train the mistakes this student made in earlier lessons. Build your sentences around exactly these points:\n"
+      + s.focus.items.map((m, i) => (i + 1) + '. They said "' + clip(m.said) + '"; correct is "' + clip(m.fix) + '".').join("\n");
+  }
+  if (s.focus && s.focus.kind === "words") {
+    plan += "\nThis drill must train these words and phrases the student has collected: "
+      + s.focus.items.map((w) => clip(w.en, 60) + " (" + clip(w.ru, 60) + ")").join("; ")
+      + ". Use one or two of them in every sentence.";
+  }
+  const parts = [
+    "You are a patient, friendly English teacher giving a private live voice lesson to a Russian-speaking adult.",
+    "",
+    "LANGUAGE",
+    "- The student's native language is Russian. You speak only Russian and English, never any other language.",
+    "- Explanations, instructions and corrections are in Russian unless the student level below says otherwise.",
+    "- When you say an English phrase for the student to learn, say it clearly and a little slower than normal speech.",
+    "",
+    "HOW TO TALK",
+    "- This is a live conversation. Keep every turn short: one or two sentences, then stop and let the student speak.",
+    "- End each turn with exactly one clear thing for the student to say: a question to answer, a phrase to repeat, or a sentence to translate.",
+    "- If the student is silent, says they do not understand, or asks for help, help in Russian and make the task simpler.",
+    "- If you hear noise, music, or speech that is clearly not addressed to you, ignore it and wait.",
+    "- Messages in round brackets are instructions from the lesson app, not the student's words: follow them and never read them aloud.",
+    "",
+    "CORRECTING",
+    "- Correct real mistakes only: grammar, a wrong word, word order, missing or extra words. If the sentence is fine, say so briefly and move on.",
+    "- When there is a mistake: say the correct sentence, give the reason in one short simple Russian sentence, and ask the student to repeat the correct sentence.",
+    "- You hear the student's real voice. If a word is pronounced so that a listener could misunderstand it, say in Russian which sound was off, say the word slowly and clearly, and ask the student to repeat it. Do not comment on an accent that is easy to understand.",
+    "- At most two corrections per turn. Praise briefly and honestly, and never call a wrong sentence right.",
+  ];
+  if (withTools) {
+    parts.push(
+      "",
+      "NOTEBOOK",
+      "- Every time you correct the student, also call note_mistake with what they said, the correct version, and a short reason in Russian.",
+      "- Every time you teach a new word or phrase, also call note_word with the English and its Russian translation.",
+      "- Do this silently: never mention the notebook or these tools aloud, and keep talking naturally.");
+  }
+  parts.push("", "STUDENT LEVEL", LEVELS[s.level].prompt, "", "LESSON PLAN", plan);
+  if (recap) {
+    parts.push("", "RESUMING", "The connection was reset in the middle of this lesson. This is how the lesson went just before that:", recap,
+      "Continue from exactly where it stopped. Do not greet the student again and do not restart the lesson.");
+  }
+  return parts.join("\n");
+}
+
+/* ================= storage ================= */
+const LS_KEY = "govori-live-v1";
+const DEFAULT_SETTINGS = {
+  level: "a0", mode: "lesson", topic: TOPICS.general[0], custom: "",
+  voice: "Kore", headphones: false, patience: 1300, notes: true,
+};
+const store = { key: "", settings: { ...DEFAULT_SETTINGS }, words: [], mistakes: [], stats: { lessons: 0, seconds: 0 } };
+
+function checkSettings() {
+  const s = store.settings;
+  if (!LEVELS[s.level]) s.level = DEFAULT_SETTINGS.level;
+  if (!MODES[s.mode]) s.mode = DEFAULT_SETTINGS.mode;
+  if (!VOICES[s.voice]) s.voice = DEFAULT_SETTINGS.voice;
+  if (![800, 1300, 2000, 3000].includes(s.patience)) s.patience = DEFAULT_SETTINGS.patience;
+  s.custom = String(s.custom || "").slice(0, 100);
+  if (!TOPICS[MODES[s.mode].topics].includes(s.topic)) s.topic = TOPICS[MODES[s.mode].topics][0];
+}
+function loadStore() {
+  try {
+    const d = JSON.parse(window.localStorage.getItem(LS_KEY) || "null");
+    if (d && typeof d === "object") {
+      if (typeof d.key === "string") store.key = d.key;
+      if (d.settings && typeof d.settings === "object") {
+        for (const k of Object.keys(DEFAULT_SETTINGS)) if (typeof d.settings[k] === typeof DEFAULT_SETTINGS[k]) store.settings[k] = d.settings[k];
+      }
+      if (Array.isArray(d.words)) {
+        store.words = d.words.filter((w) => w && typeof w.en === "string" && typeof w.ru === "string" && w.en.trim())
+          .slice(0, 400).map((w) => ({ en: w.en.slice(0, 80), ru: w.ru.slice(0, 120), n: Number(w.n) || 1, t: Number(w.t) || 0 }));
+      }
+      if (Array.isArray(d.mistakes)) {
+        store.mistakes = d.mistakes.filter((m) => m && typeof m.said === "string" && typeof m.fix === "string")
+          .slice(0, 150).map((m) => ({ kind: String(m.kind || ""), said: m.said.slice(0, 300), fix: m.fix.slice(0, 300), why: String(m.why || "").slice(0, 300), t: Number(m.t) || 0 }));
+      }
+      if (d.stats && typeof d.stats === "object") {
+        store.stats.lessons = Math.max(0, Number(d.stats.lessons) || 0);
+        store.stats.seconds = Math.max(0, Number(d.stats.seconds) || 0);
+      }
+    }
+  } catch (e) { /* storage may be missing: start fresh */ }
+  checkSettings();
+}
+let storageWorks = true;
+function saveStore() {
+  try {
+    window.localStorage.setItem(LS_KEY, JSON.stringify(store));
+    storageWorks = true;
+  } catch (e) { storageWorks = false; }
+}
+
+/* ================= where Google lives ================= */
+/* A local test server may stand in for Google, but only when the page itself is opened from localhost. */
+const LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+const testApi = LOCAL ? new URLSearchParams(location.search).get("api") : null;
+const API_HTTP = testApi || "https://generativelanguage.googleapis.com";
+const API_WS = API_HTTP.replace(/^http/, "ws");
+/* Google documents the raw socket under v1beta; its own client library dials v1. Try the first, fall back to the second. */
+const WS_VERSIONS = ["v1beta", "v1"];
+const wsPath = (v) => "/ws/google.ai.generativelanguage." + v + ".GenerativeService.BidiGenerateContent";
+const MODEL_CHAIN = ["gemini-3.8-live", "gemini-3.1-flash-live-preview", "gemini-2.5-flash-native-audio-preview-12-2025"];
+
+/* ================= elements ================= */
+const feed = $("#feed");
+const setupEl = $("#setup");
+const logEl = $("#log");
+const lastNote = $("#last-note");
+const levelBox = $("#opts-level");
+const modeBox = $("#opts-mode");
+const topicBox = $("#opts-topic");
+const customInput = $("#custom-topic");
+const lessonChip = $("#lesson-chip");
+const lessonLabel = $("#lesson-label");
+const noticeEl = $("#notice");
+const stateEl = $("#state");
+const orb = $("#orb");
+const stateTitle = $("#state-title");
+const stateHint = $("#state-hint");
+const clockEl = $("#clock");
+const quickEl = $("#quick");
+const mainBtn = $("#btn-main");
+const pauseBtn = $("#btn-pause");
+const endBtn = $("#btn-end");
+const typeForm = $("#typebar");
+const typeInput = $("#type-input");
+const keyInput = $("#key-input");
+const keyState = $("#key-state");
+
+/* ================= text tools ================= */
+const normText = (s) => String(s || "").toLowerCase().replace(/[’`]/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, " ").replace(/\s+/g, " ").trim();
+
+function diffWords(a, b) {
+  const A = a.trim().split(/\s+/).filter(Boolean).slice(0, 80);
+  const B = b.trim().split(/\s+/).filter(Boolean).slice(0, 80);
+  const na = A.map(normText);
+  const nb = B.map(normText);
+  const n = A.length;
+  const m = B.length;
+  const L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      L[i][j] = na[i] && na[i] === nb[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    }
+  }
+  const ra = [];
+  const rb = [];
+  let i = 0;
+  let j = 0;
+  while (i < n && j < m) {
+    if (na[i] && na[i] === nb[j]) { ra.push({ t: A[i], x: false }); rb.push({ t: B[j], x: false }); i++; j++; }
+    else if (L[i + 1][j] >= L[i][j + 1]) { ra.push({ t: A[i], x: true }); i++; }
+    else { rb.push({ t: B[j], x: true }); j++; }
+  }
+  while (i < n) ra.push({ t: A[i++], x: true });
+  while (j < m) rb.push({ t: B[j++], x: true });
+  return { a: ra, b: rb };
+}
+function spread(tokens, tag) {
+  const out = [];
+  tokens.forEach((w, k) => {
+    out.push(w.x ? h(tag, null, w.t) : w.t);
+    if (k < tokens.length - 1) out.push(" ");
+  });
+  return out;
+}
+/* The teacher mixes Russian and English in one breath: English runs are set in the print face. */
+function byScript(text) {
+  const out = [];
+  let cur = null;
+  for (const tok of String(text).split(/(\s+)/)) {
+    if (!tok) continue;
+    if (/^\s+$/.test(tok)) { if (cur) cur.text += tok; continue; }
+    const lang = /[Ѐ-ӿ]/.test(tok) ? "ru" : /[A-Za-z]/.test(tok) ? "en" : null;
+    if (!cur) cur = { lang, text: tok };
+    else if (lang && cur.lang && cur.lang !== lang) { out.push(cur); cur = { lang, text: tok }; }
+    else { cur.text += tok; if (!cur.lang) cur.lang = lang; }
+  }
+  if (cur) out.push(cur);
+  return out.map((r) => (r.lang === "en" ? h("span", { class: "en", lang: "en" }, r.text) : r.text));
+}
+
+/* ================= notices ================= */
+let noticeTimer = null;
+function notify(text, ms = 12000) {
+  noticeEl.textContent = text;
+  noticeEl.hidden = !text;
+  clearTimeout(noticeTimer);
+  if (text && ms) noticeTimer = setTimeout(() => { noticeEl.hidden = true; }, ms);
+}
+
+/* ================= sound: one context for the microphone and the teacher's voice ================= */
+const audio = {
+  ctx: null, gain: null, stream: null, source: null, node: null, sink: null, resample: null,
+  micOn: false, level: 0, next: 0, sources: new Set(), carry: "", dropUntilTurnEnd: false, gateUntil: 0,
+};
+const WORKLET_SRC = [
+  "class MicCapture extends AudioWorkletProcessor {",
+  "  constructor() { super(); this.parts = []; this.count = 0; this.want = Math.round(sampleRate * 0.04); }",
+  "  process(inputs) {",
+  "    const ch = inputs[0] && inputs[0][0];",
+  "    if (ch && ch.length) {",
+  "      this.parts.push(new Float32Array(ch)); this.count += ch.length;",
+  "      if (this.count >= this.want) {",
+  "        const out = new Float32Array(this.count); let o = 0;",
+  "        for (const p of this.parts) { out.set(p, o); o += p.length; }",
+  "        this.parts = []; this.count = 0;",
+  "        this.port.postMessage(out, [out.buffer]);",
+  "      }",
+  "    }",
+  "    return true;",
+  "  }",
+  "}",
+  'registerProcessor("mic-capture", MicCapture);',
+].join("\n");
+
+function ensureContext() {
+  if (!audio.ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) throw new Error("no AudioContext");
+    audio.ctx = new AC({ latencyHint: "interactive" });
+    audio.gain = audio.ctx.createGain();
+    audio.gain.connect(audio.ctx.destination);
+    audio.ctx.onstatechange = () => { log("audio", "context " + audio.ctx.state + " @" + audio.ctx.sampleRate); updateUI(); };
+  }
+  if (audio.ctx.state !== "running") {
+    try { Promise.resolve(audio.ctx.resume()).catch(() => {}); } catch (e) { /* resumed by the next tap */ }
+  }
+  return audio.ctx;
+}
+/* Box-filter resampler from the device rate to 16 kHz, keeping its place between calls. */
+function makeResampler(inRate, outRate) {
+  const ratio = inRate / outRate;
+  let tail = new Float32Array(0);
+  let offset = 0;
+  return (input) => {
+    const data = new Float32Array(tail.length + input.length);
+    data.set(tail, 0);
+    data.set(input, tail.length);
+    const outLen = Math.max(0, Math.floor((data.length - offset) / ratio));
+    const out = new Int16Array(outLen);
+    let pos = offset;
+    for (let i = 0; i < outLen; i++) {
+      const end = pos + ratio;
+      const from = Math.floor(pos);
+      const to = Math.min(data.length, Math.max(from + 1, Math.ceil(end)));
+      let sum = 0;
+      for (let j = from; j < to; j++) sum += data[j];
+      const v = sum / (to - from);
+      out[i] = v >= 1 ? 32767 : v <= -1 ? -32768 : Math.round(v * 32767);
+      pos = end;
+    }
+    const used = Math.floor(pos);
+    tail = data.slice(used);
+    offset = pos - used;
+    return out;
+  };
+}
+function pcmToBase64(pcm) {
+  const bytes = new Uint8Array(pcm.buffer, pcm.byteOffset, pcm.byteLength);
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x2000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x2000));
+  return btoa(s);
+}
+async function startMic() {
+  if (audio.micOn) return true;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw Object.assign(new Error("no getUserMedia"), { name: "NotSupportedError" });
+  try { if (navigator.audioSession) navigator.audioSession.type = "play-and-record"; } catch (e) { /* older browsers */ }
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+    video: false,
+  });
+  const ctx = ensureContext();
+  audio.stream = stream;
+  audio.source = ctx.createMediaStreamSource(stream);
+  audio.resample = makeResampler(ctx.sampleRate, 16000);
+  audio.sink = ctx.createGain();
+  audio.sink.gain.value = 0;
+  audio.sink.connect(ctx.destination);
+  let viaWorklet = false;
+  if (ctx.audioWorklet && typeof window.AudioWorkletNode === "function") {
+    try {
+      const url = URL.createObjectURL(new Blob([WORKLET_SRC], { type: "application/javascript" }));
+      await ctx.audioWorklet.addModule(url);
+      URL.revokeObjectURL(url);
+      const node = new AudioWorkletNode(ctx, "mic-capture", { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1] });
+      node.port.onmessage = (e) => onMicFrames(e.data);
+      audio.source.connect(node);
+      node.connect(audio.sink);
+      audio.node = node;
+      viaWorklet = true;
+    } catch (e) { log("mic", "worklet unavailable: " + (e && e.message)); }
+  }
+  if (!viaWorklet) {
+    const node = ctx.createScriptProcessor(2048, 1, 1);
+    node.onaudioprocess = (e) => onMicFrames(new Float32Array(e.inputBuffer.getChannelData(0)));
+    audio.source.connect(node);
+    node.connect(audio.sink);
+    audio.node = node;
+  }
+  const track = stream.getAudioTracks()[0];
+  if (track) track.addEventListener("ended", () => { log("mic", "track ended"); stopMic(); notify("Микрофон отключился. Нажми «Продолжить», чтобы включить его снова."); if (session) { session.paused = true; updateUI(); } });
+  audio.micOn = true;
+  log("mic", "on, " + ctx.sampleRate + " Hz, " + (viaWorklet ? "worklet" : "script") + (track && track.label ? ", " + track.label : ""));
+  return true;
+}
+function stopMic() {
+  audio.micOn = false;
+  try { if (audio.node) { audio.node.disconnect(); if (audio.node.port) audio.node.port.onmessage = null; audio.node.onaudioprocess = null; } } catch (e) { /* gone */ }
+  try { if (audio.source) audio.source.disconnect(); } catch (e) { /* gone */ }
+  try { if (audio.sink) audio.sink.disconnect(); } catch (e) { /* gone */ }
+  try { if (audio.stream) audio.stream.getTracks().forEach((t) => t.stop()); } catch (e) { /* gone */ }
+  audio.node = audio.source = audio.sink = audio.stream = null;
+  audio.level = 0;
+}
+const teacherSpeaking = () => audio.sources.size > 0;
+function micGateOpen() {
+  if (store.settings.headphones) return true;
+  return !teacherSpeaking() && performance.now() >= audio.gateUntil;
+}
+function onMicFrames(f32) {
+  if (!audio.micOn || !audio.resample) return;
+  let sum = 0;
+  for (let i = 0; i < f32.length; i += 4) sum += f32[i] * f32[i];
+  const rms = Math.sqrt(sum / Math.max(1, f32.length / 4));
+  const pcm = audio.resample(f32);
+  const sending = live.ready && session && !session.paused;
+  const open = sending && micGateOpen();
+  audio.level = open ? Math.max(rms, audio.level * 0.82) : audio.level * 0.82;
+  if (!sending || !pcm.length) return;
+  if (!open) pcm.fill(0);
+  if (live.ws && live.ws.bufferedAmount > 600000) { live.dropped++; return; }
+  live.sentChunks++;
+  sendJson({ realtimeInput: { audio: { data: pcmToBase64(pcm), mimeType: "audio/pcm;rate=16000" } } });
+}
+function playChunk(b64, mime) {
+  const ctx = audio.ctx;
+  if (!ctx || audio.dropUntilTurnEnd) return;
+  const m = /rate=(\d+)/.exec(mime || "");
+  const rate = clamp(m ? Number(m[1]) : 24000, 8000, 96000);
+  let bin;
+  try { bin = audio.carry + atob(b64); } catch (e) { return; }
+  const n = bin.length >> 1;
+  audio.carry = bin.length % 2 ? bin.slice(-1) : "";
+  if (!n) return;
+  const buf = ctx.createBuffer(1, n, rate);
+  const ch = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) {
+    let v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8);
+    if (v >= 0x8000) v -= 0x10000;
+    ch[i] = v / 32768;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(audio.gain);
+  const now = ctx.currentTime;
+  const at = audio.next > now + 0.02 ? audio.next : now + 0.09;
+  const wasQuiet = audio.sources.size === 0;
+  src.start(at);
+  audio.next = at + buf.duration;
+  audio.sources.add(src);
+  src.onended = () => {
+    audio.sources.delete(src);
+    if (!audio.sources.size) { audio.gateUntil = performance.now() + 350; updateUI(); maybeMoveOn(); }
+  };
+  if (wasQuiet) updateUI();
+}
+function flushPlayback() {
+  for (const src of audio.sources) {
+    src.onended = null;
+    try { src.stop(); } catch (e) { /* not started yet */ }
+  }
+  audio.sources.clear();
+  audio.next = 0;
+  audio.carry = "";
+  audio.gateUntil = performance.now() + 150;
+}
+
+/* ================= the live connection ================= */
+/* Optional parts of the setup, in the order they are given up if Google refuses the settings. */
+const FEATURES = ["tools", "vad", "resume", "compress", "voice", "transcript"];
+const FEATURE_HINT = {
+  tools: /tool|function|behaviou?r|declaration/i, vad: /silence|activity|realtime.?input|sensitiv/i, resume: /resum|handle/i,
+  compress: /compress|sliding|window/i, voice: /voice|speech/i, transcript: /transcri/i,
+};
+const live = {
+  ws: null, ready: false, opening: false, userClosed: false, planned: false,
+  models: MODEL_CHAIN.slice(), modelIx: 0, off: new Set(), handle: "", goAway: false,
+  fails: 0, drops: 0, setupTimer: null, retryTimer: null, sentChunks: 0, dropped: 0, gotAudio: 0, turnOpen: false,
+  verIx: 0, everOpened: false, verSwitched: false,
+};
+const currentModel = () => live.models[live.modelIx] || MODEL_CHAIN[0];
+
+function sendJson(obj) {
+  if (!live.ws || live.ws.readyState !== 1) return false;
+  try { live.ws.send(JSON.stringify(obj)); return true; } catch (e) { return false; }
+}
+function sendText(text) {
+  return sendJson({ realtimeInput: { text: String(text) } });
+}
+const uses = (feature) => !live.off.has(feature);
+function buildSetup() {
+  const s = store.settings;
+  const withTools = uses("tools") && s.notes;
+  const resuming = uses("resume") && !!live.handle;
+  const setup = {
+    model: "models/" + currentModel(),
+    generationConfig: { responseModalities: ["AUDIO"] },
+    systemInstruction: { parts: [{ text: buildInstruction(session, withTools, resuming ? "" : session.recap) }] },
+  };
+  if (uses("voice")) setup.generationConfig.speechConfig = { voiceConfig: { prebuiltVoiceConfig: { voiceName: s.voice } } };
+  if (uses("transcript")) { setup.inputAudioTranscription = {}; setup.outputAudioTranscription = {}; }
+  if (uses("vad")) setup.realtimeInputConfig = { automaticActivityDetection: { endOfSpeechSensitivity: "END_SENSITIVITY_LOW", silenceDurationMs: s.patience } };
+  if (uses("resume")) setup.sessionResumption = resuming ? { handle: live.handle } : {};
+  if (uses("compress")) setup.contextWindowCompression = { slidingWindow: {} };
+  if (withTools) setup.tools = TOOLS;
+  return { setup };
+}
+/* Google refused the settings: give up the part its message names, or else the next optional part. */
+function dropFeature(reason) {
+  const left = FEATURES.filter((f) => uses(f) && (f !== "tools" || store.settings.notes));
+  const pick = left.find((f) => FEATURE_HINT[f].test(String(reason || ""))) || left[0];
+  if (!pick) return "";
+  live.off.add(pick);
+  if (pick === "resume") live.handle = "";
+  return pick;
+}
+function classify(code, reason) {
+  const r = String(reason || "");
+  if (/api[ _-]?key|unauthenticated|credential|permission[ _]denied|access token|not authorized/i.test(r)) return "key";
+  if (/quota|exhaust|rate limit|too many|billing/i.test(r)) return "quota";
+  if (/location is not supported|not available in your (country|region)|unsupported (country|region)/i.test(r)) return "region";
+  if (/models?\/[\w.\-]+ is not found|is not found for api version|not supported for bidi|model.*(not found|does not exist|unavailable)/i.test(r)) return "model";
+  if (/invalid|unknown name|cannot find field|unsupported|not supported|malformed|unrecognized|bad request/i.test(r)) return "config";
+  if (/deadline|unavailable|internal|overloaded|try again/i.test(r)) return "busy";
+  return "unknown";
+}
+function connect() {
+  clearTimeout(live.retryTimer);
+  if (!session || live.ws) return;
+  live.userClosed = false;
+  live.planned = false;
+  live.goAway = false;
+  live.opening = true;
+  live.ready = false;
+  live.turnOpen = false;
+  audio.dropUntilTurnEnd = false;
+  updateUI();
+  let ws;
+  try {
+    ws = new WebSocket(API_WS + wsPath(WS_VERSIONS[live.verIx]) + "?key=" + encodeURIComponent(store.key));
+  } catch (e) {
+    log("ws", "cannot open: " + (e && e.message));
+    live.opening = false;
+    lessonFailed("network");
+    return;
+  }
+  ws.binaryType = "arraybuffer";
+  live.ws = ws;
+  const resumed = uses("resume") && !!live.handle;
+  let opened = false;
+  log("ws", "connecting " + WS_VERSIONS[live.verIx] + ", model " + currentModel() + (live.off.size ? ", without " + [...live.off].join("+") : "") + (resumed ? ", resuming" : session.recap ? ", with recap" : ""));
+  ws.onopen = () => {
+    if (live.ws !== ws) return;
+    opened = true;
+    live.everOpened = true;
+    const msg = buildSetup();
+    log("ws", "open, setup sent: " + Object.keys(msg.setup).join(","));
+    ws.send(JSON.stringify(msg));
+    live.setupTimer = setTimeout(() => {
+      if (live.ws === ws && !live.ready) { log("ws", "no setupComplete in 15 s"); try { ws.close(); } catch (e) { /* closing */ } }
+    }, 15000);
+  };
+  ws.onmessage = (ev) => {
+    if (live.ws !== ws) return;
+    const take = (text) => {
+      let msg;
+      try { msg = JSON.parse(text); } catch (e) { log("ws", "unreadable message"); return; }
+      try { onServer(msg, resumed); } catch (e) { log("app", "handler error: " + (e && e.message)); console.error(e); }
+    };
+    const d = ev.data;
+    if (typeof d === "string") take(d);
+    else if (d instanceof ArrayBuffer) take(new TextDecoder().decode(d));
+    else if (d && typeof d.text === "function") d.text().then(take, () => {});
+  };
+  ws.onerror = () => { if (live.ws === ws) log("ws", "error event"); };
+  ws.onclose = (ev) => {
+    if (live.ws !== ws) return;
+    clearTimeout(live.setupTimer);
+    const wasReady = live.ready;
+    live.ws = null;
+    live.ready = false;
+    live.opening = false;
+    log("ws", "closed " + ev.code + (ev.reason ? " " + ev.reason : "") + (wasReady ? "" : opened ? " (before setup finished)" : " (never opened)"));
+    onClosed(ev.code, ev.reason, wasReady, opened);
+  };
+}
+function retrySoon(ms) {
+  clearTimeout(live.retryTimer);
+  live.opening = true;
+  updateUI();
+  live.retryTimer = setTimeout(connect, ms);
+}
+function onClosed(code, reason, wasReady, opened) {
+  if (!session || live.userClosed) { updateUI(); return; }
+  const kind = classify(code, reason);
+  if (!opened && !live.everOpened && !live.verSwitched) {
+    live.verSwitched = true;
+    live.verIx = (live.verIx + 1) % WS_VERSIONS.length;
+    log("ws", "trying the other address, " + WS_VERSIONS[live.verIx]);
+    retrySoon(250);
+    return;
+  }
+  if (live.planned) {
+    live.planned = false;
+    retrySoon(150);
+    return;
+  }
+  if (kind === "key" || kind === "quota" || kind === "region") { lessonFailed(kind); return; }
+  if (!wasReady) {
+    if (live.handle && kind !== "model" && kind !== "config") {
+      log("ws", "resume refused, starting a fresh connection");
+      live.handle = "";
+      session.recap = recapText();
+      retrySoon(300);
+      return;
+    }
+    if (kind === "model") {
+      if (live.modelIx < live.models.length - 1) { live.modelIx++; retrySoon(200); return; }
+      lessonFailed("model");
+      return;
+    }
+    if (kind === "config") {
+      const gone = dropFeature(reason);
+      if (gone) { log("ws", "settings refused, retrying without " + gone); retrySoon(200); return; }
+      lessonFailed("config");
+      return;
+    }
+    live.fails++;
+    if (live.fails <= 2) { retrySoon(900 * live.fails); return; }
+    lessonFailed(kind === "busy" ? "busy" : code === 1006 || kind === "unknown" ? "network" : kind);
+    return;
+  }
+  /* The line dropped in the middle of a lesson: come back, with the session handle if there is one. */
+  live.drops++;
+  if (live.drops > 6) { lessonFailed("network"); return; }
+  if (!live.handle) session.recap = recapText();
+  retrySoon(live.goAway ? 150 : 600);
+}
+function closeLive(planned) {
+  clearTimeout(live.setupTimer);
+  clearTimeout(live.retryTimer);
+  live.planned = !!planned;
+  live.userClosed = !planned;
+  const ws = live.ws;
+  if (ws) {
+    try { ws.close(1000, "done"); } catch (e) { /* already closing */ }
+    if (!planned) { live.ws = null; live.ready = false; live.opening = false; }
+  } else if (!planned) {
+    live.ready = false;
+    live.opening = false;
+  }
+}
+/* After Google announces that the line will be cut, move to a fresh connection at the next quiet moment. */
+function maybeMoveOn() {
+  if (!session || !live.ready || !live.goAway || !live.handle) return;
+  if (teacherSpeaking() || live.turnOpen) return;
+  log("ws", "moving to a fresh connection before the cut");
+  closeLive(true);
+}
+function onServer(msg, resumed) {
+  if (msg.setupComplete) {
+    clearTimeout(live.setupTimer);
+    live.ready = true;
+    live.opening = false;
+    live.fails = 0;
+    log("ws", "setup complete");
+    if (!resumed) {
+      sendText(session.recap
+        ? "(Связь восстановилась. Продолжай занятие с того же места, без приветствия.)"
+        : "(Ученик готов. Начни занятие: поздоровайся и дай первое задание.)");
+    }
+    session.started = true;
+    updateUI();
+  }
+  const sc = msg.serverContent;
+  if (sc) {
+    if (sc.interrupted) {
+      flushPlayback();
+      audio.dropUntilTurnEnd = false;
+      live.turnOpen = false;
+      closeTeacherLine(true);
+    }
+    if (sc.modelTurn && Array.isArray(sc.modelTurn.parts)) {
+      for (const part of sc.modelTurn.parts) {
+        const blob = part && part.inlineData;
+        if (blob && blob.data && /^audio\//i.test(blob.mimeType || "audio/pcm")) {
+          live.gotAudio++;
+          live.turnOpen = true;
+          playChunk(blob.data, blob.mimeType);
+        }
+      }
+    }
+    if (sc.inputTranscription && sc.inputTranscription.text) addStudentText(sc.inputTranscription.text);
+    if (sc.outputTranscription && sc.outputTranscription.text && !audio.dropUntilTurnEnd) addTeacherText(sc.outputTranscription.text);
+    if (sc.turnComplete) {
+      audio.dropUntilTurnEnd = false;
+      live.turnOpen = false;
+      closeTeacherLine(false);
+      maybeMoveOn();
+    }
+    updateUI();
+  }
+  if (msg.toolCall && Array.isArray(msg.toolCall.functionCalls)) handleTools(msg.toolCall.functionCalls);
+  const upd = msg.sessionResumptionUpdate;
+  if (upd && upd.resumable && upd.newHandle) live.handle = String(upd.newHandle);
+  if (msg.goAway) {
+    live.goAway = true;
+    log("ws", "goAway, time left " + (msg.goAway.timeLeft || "?"));
+    maybeMoveOn();
+  }
+}
+function handleTools(calls) {
+  const responses = [];
+  for (const fc of calls) {
+    if (!fc || !fc.name) continue;
+    const a = fc.args && typeof fc.args === "object" ? fc.args : {};
+    try {
+      if (fc.name === "note_mistake") noteMistake(a);
+      else if (fc.name === "note_word") noteWord(a);
+    } catch (e) { log("app", "note failed: " + (e && e.message)); }
+    responses.push({ id: fc.id, name: fc.name, response: { result: "ok", scheduling: "SILENT" } });
+  }
+  if (responses.length) sendJson({ toolResponse: { functionResponses: responses } });
+}
+
+/* ================= key ================= */
+async function checkKey(key) {
+  try {
+    const res = await fetch(API_HTTP + "/v1beta/models?pageSize=1000&key=" + encodeURIComponent(key), { cache: "no-store" });
+    let body = null;
+    try { body = await res.json(); } catch (e) { body = null; }
+    if (res.ok && body && Array.isArray(body.models)) {
+      const names = body.models
+        .filter((m) => m && typeof m.name === "string" && Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("bidiGenerateContent"))
+        .map((m) => m.name.replace(/^models\//, ""));
+      return { ok: true, names };
+    }
+    const text = body && body.error && body.error.message ? String(body.error.message) : "HTTP " + res.status;
+    return { ok: false, kind: classify(0, text), text };
+  } catch (e) {
+    return { ok: null, text: String((e && e.message) || e) };
+  }
+}
+function adoptModels(names) {
+  if (!names || !names.length) return;
+  const known = MODEL_CHAIN.filter((m) => names.includes(m));
+  const other = names.filter((n) => !known.includes(n) && /live|native-audio/i.test(n) && !/translat|transcri|thinking|robot|tts|music|image/i.test(n));
+  const list = known.concat(other);
+  if (list.length) { live.models = list; live.modelIx = 0; }
+  log("key", "live models: " + (list.join(", ") || "none listed"));
+}
+const FAIL_TEXT = {
+  key: "Google не принял ключ. Проверь, что он скопирован целиком, или создай новый на aistudio.google.com/apikey.",
+  quota: "Бесплатный лимит Google на сейчас исчерпан. Подожди несколько минут и начни занятие снова; дневной лимит обновляется раз в сутки.",
+  region: "Google не обслуживает Gemini API в этой стране, поэтому учитель здесь не ответит.",
+  model: "Google не дал этому ключу голосовую модель. Попробуй позже.",
+  busy: "Сервис Google сейчас перегружен. Попробуй через минуту.",
+  network: "Не получилось соединиться с голосовым сервисом Google. Проверь интернет и нажми «Продолжить». Если не помогает, скопируй журнал в настройках и пришли его.",
+  config: "Google отклонил настройки занятия. Скопируй журнал в настройках и пришли его.",
+  unknown: "Связь с Google оборвалась. Нажми «Продолжить».",
+};
+function renderKeyCard() {
+  const has = !!store.key;
+  $("#key-new").hidden = has;
+  $("#key-ok").hidden = !has;
+  $("#key-mask").textContent = has ? "Сохранён: ••••" + store.key.slice(-4) : "Не задан";
+  $("#btn-key-forget").hidden = !has;
+}
+async function saveKey() {
+  const key = keyInput.value.trim().replace(/\s+/g, "");
+  keyState.className = "key-state";
+  if (key.length < 20) {
+    keyState.classList.add("bad");
+    keyState.textContent = "Это не похоже на ключ: он длинный, около 40 знаков. Скопируй его целиком.";
+    return;
+  }
+  keyState.textContent = "Проверяю ключ…";
+  $("#btn-key-save").disabled = true;
+  const res = await checkKey(key);
+  $("#btn-key-save").disabled = false;
+  if (res.ok === false && (res.kind === "key" || res.kind === "region")) {
+    keyState.classList.add("bad");
+    keyState.textContent = FAIL_TEXT[res.kind];
+    log("key", "rejected: " + res.text);
+    return;
+  }
+  store.key = key;
+  saveStore();
+  keyInput.value = "";
+  if (res.ok) adoptModels(res.names);
+  else log("key", "saved without a check: " + res.text);
+  keyState.textContent = "";
+  renderKeyCard();
+  updateUI();
+  if (!storageWorks) notify("Браузер не даёт сохранять данные (возможно, включён приватный режим). Ключ придётся вставлять заново при каждом открытии.", 0);
+}
+$("#btn-key-save").addEventListener("click", saveKey);
+keyInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); saveKey(); } });
+$("#btn-key-change").addEventListener("click", () => { $("#key-new").hidden = false; $("#key-ok").hidden = true; keyInput.focus(); });
+$("#btn-key-forget").addEventListener("click", () => {
+  if (session) endLesson();
+  store.key = "";
+  saveStore();
+  renderKeyCard();
+  updateUI();
+});
+
+/* ================= the lesson ================= */
+let session = null;
+let lastSummary = null;
+let clockTimer = null;
+let wakeLock = null;
+
+function dateLine() {
+  let d = "";
+  try { d = new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "long" }); } catch (e) { d = ""; }
+  return (d ? d[0].toUpperCase() + d.slice(1) + ". " : "") + "Классная работа.";
+}
+function currentTopic() {
+  return store.settings.custom.trim() || store.settings.topic;
+}
+async function keepAwake() {
+  try { if (navigator.wakeLock && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } } catch (e) { /* the screen may dim */ }
+}
+function letSleep() {
+  try { if (wakeLock) wakeLock.release(); } catch (e) { /* released */ }
+  wakeLock = null;
+}
+/* Runs straight from the tap: the audio context has to be woken inside the gesture. */
+async function startLesson(preset) {
+  if (session || !store.key) return;
+  const s = store.settings;
+  session = {
+    level: s.level, mode: (preset && preset.mode) || s.mode, topic: (preset && preset.topic) || currentTopic(),
+    focus: (preset && preset.focus) || null, startedAt: Date.now(), started: false, paused: false, failed: "",
+    exchanges: [], cur: null, recap: "", fixes: 0, newWords: 0,
+  };
+  Object.assign(live, { modelIx: 0, handle: "", fails: 0, drops: 0, sentChunks: 0, dropped: 0, gotAudio: 0, verSwitched: false });
+  audio.dropUntilTurnEnd = false;
+  log("app", "lesson: " + session.mode + "/" + session.level + ", headphones " + s.headphones + ", patience " + s.patience);
+  try { ensureContext(); } catch (e) { log("audio", "no audio context: " + (e && e.message)); }
+  setupEl.hidden = true;
+  logEl.hidden = false;
+  logEl.replaceChildren(h("p", { class: "dateline" }, dateLine()));
+  lessonLabel.textContent = MODES[session.mode].name + " · " + LEVELS[session.level].name + " · " + session.topic;
+  feed.scrollTop = 0;
+  follow = true;
+  anchor = null;
+  store.stats.lessons++;
+  saveStore();
+  clockTimer = setInterval(tick, 110);
+  updateUI();
+  const mine = session;
+  try {
+    await startMic();
+  } catch (e) {
+    const name = (e && e.name) || "";
+    log("mic", "failed: " + name + " " + ((e && e.message) || ""));
+    notify(name === "NotAllowedError" || name === "SecurityError"
+      ? "Браузер не дал доступ к микрофону. Разреши микрофон для этого сайта в настройках браузера и начни занятие заново. Пока можно печатать учителю."
+      : name === "NotFoundError" ? "Микрофон не найден. Можно печатать учителю."
+      : "Микрофон не включился. Можно печатать учителю.", 0);
+  }
+  if (session !== mine) return;
+  try { ensureContext(); } catch (e) { /* reported above */ }
+  keepAwake();
+  connect();
+}
+function lessonFailed(kind) {
+  if (!session) return;
+  session.failed = kind;
+  closeLive(false);
+  flushPlayback();
+  closeTeacherLine(true);
+  log("app", "stopped: " + kind);
+  sysLine(FAIL_TEXT[kind] || FAIL_TEXT.unknown);
+  updateUI();
+}
+function resumeLesson() {
+  if (!session || !session.failed) return;
+  session.failed = "";
+  live.fails = 0;
+  live.drops = 0;
+  if (!live.handle) session.recap = recapText();
+  try { ensureContext(); } catch (e) { /* no sound */ }
+  const go = () => { if (session && !session.failed) connect(); };
+  if (!audio.micOn) startMic().catch(() => {}).then(go); else go();
+  updateUI();
+}
+function endLesson() {
+  if (!session) return;
+  const ended = session;
+  session = null;
+  clearInterval(clockTimer);
+  closeLive(false);
+  flushPlayback();
+  stopMic();
+  letSleep();
+  store.stats.seconds += Math.round((Date.now() - ended.startedAt) / 1000);
+  saveStore();
+  lastSummary = { minutes: Math.max(1, Math.round((Date.now() - ended.startedAt) / 60000)), fixes: ended.fixes, words: ended.newWords, talked: ended.exchanges.length > 0 };
+  log("app", "lesson ended: sent " + live.sentChunks + " chunks, dropped " + live.dropped + ", audio parts " + live.gotAudio);
+  logEl.hidden = true;
+  logEl.replaceChildren();
+  setupEl.hidden = false;
+  typeInput.value = "";
+  notify("");
+  renderSetup();
+  feed.scrollTop = 0;
+  updateUI();
+}
+function tick() {
+  if (!session) return;
+  const sec = Math.floor((Date.now() - session.startedAt) / 1000);
+  const text = String(Math.floor(sec / 60)).padStart(2, "0") + ":" + String(sec % 60).padStart(2, "0");
+  if (clockEl.textContent !== text) clockEl.textContent = text;
+  orb.style.setProperty("--lvl", phaseNow() === "listening" ? clamp(audio.level * 9, 0, 1).toFixed(2) : "0");
+}
+function recapText() {
+  if (!session) return "";
+  const lines = [];
+  for (const ex of session.exchanges.slice(-6)) {
+    if (ex.sText.trim()) lines.push("Student: " + clip(ex.sText, 300));
+    if (ex.tText.trim()) lines.push("Teacher: " + clip(ex.tText, 400));
+  }
+  return lines.join("\n");
+}
+
+/* ----- the notebook page: one exchange is the student's line and the teacher's answer ----- */
+let anchor = null;
+let follow = true;
+function scrollEnd(force) {
+  if (!session) return;
+  if (force) follow = true;
+  if (!follow) return;
+  const max = Math.max(0, feed.scrollHeight - feed.clientHeight);
+  feed.scrollTop = anchor && anchor.isConnected ? Math.min(max, Math.max(0, anchor.offsetTop - 14)) : max;
+}
+const readerScrolled = () => { follow = false; };
+feed.addEventListener("wheel", readerScrolled, { passive: true });
+feed.addEventListener("touchmove", readerScrolled, { passive: true });
+if ("ResizeObserver" in window) new ResizeObserver(() => scrollEnd(false)).observe(feed);
+
+function newExchange() {
+  const ex = {
+    sText: "", tText: "", tOpen: false, tDone: false, cut: false, fixes: [], words: [],
+    sNode: h("article", { class: "entry student", hidden: true }),
+    tNode: h("article", { class: "entry teacher", hidden: true }),
+  };
+  session.exchanges.push(ex);
+  session.cur = ex;
+  logEl.append(ex.sNode, ex.tNode);
+  if (session.exchanges.length > 80) {
+    const old = session.exchanges.shift();
+    old.sNode.remove();
+    old.tNode.remove();
+  }
+  return ex;
+}
+function renderStudent(ex) {
+  const kids = [];
+  const has = ex.sText.trim();
+  if (ex.fixes.length) kids.push(h("span", { class: "mark", "aria-hidden": "true" }, "|"));
+  if (has || ex.fixes.length) kids.push(h("p", { class: "who" }, "Ты"));
+  const firstSaid = ex.fixes.find((f) => f.said && f.fix && f.kind !== "pronunciation");
+  if (has) {
+    if (firstSaid && normText(firstSaid.said) === normText(ex.sText)) {
+      kids.push(h("p", { class: "said" }, spread(diffWords(ex.sText.trim(), firstSaid.fix).a, "del")));
+    } else {
+      kids.push(h("p", { class: "said" }, ex.sText.trim()));
+    }
+  }
+  for (const f of ex.fixes) {
+    const d = f.said && f.kind !== "pronunciation" ? diffWords(f.said, f.fix) : null;
+    kids.push(h("div", { class: "fix" },
+      h("p", { class: "verdict" }, f.kind === "pronunciation" ? "Произношение:" : "Лучше так:"),
+      h("p", { class: "right", lang: "en" }, d ? spread(d.b, "ins") : f.fix),
+      f.why ? h("p", { class: "why" }, f.why) : null));
+  }
+  ex.sNode.hidden = !kids.length;
+  ex.sNode.replaceChildren(...kids);
+}
+function renderTeacher(ex) {
+  const kids = [];
+  if (ex.tText.trim() || ex.words.length) kids.push(h("p", { class: "who" }, "Учитель"));
+  if (ex.tText.trim()) kids.push(h("p", { class: "say" + (ex.tOpen ? " live" : "") + (ex.cut ? " cut" : "") }, byScript(ex.tText.trim())));
+  if (ex.words.length) {
+    kids.push(h("ul", { class: "words" }, ex.words.map((w) => h("li", { class: "word" }, h("b", { lang: "en" }, w.en), h("span", null, w.ru)))));
+  }
+  ex.tNode.hidden = !kids.length;
+  ex.tNode.replaceChildren(...kids);
+}
+function addStudentText(text) {
+  if (!session) return;
+  let ex = session.cur;
+  if (!ex || ex.tDone) ex = newExchange();
+  ex.sText += text;
+  renderStudent(ex);
+  if (!anchor || anchor !== ex.sNode) { anchor = ex.sNode; scrollEnd(true); } else scrollEnd(false);
+}
+function addTeacherText(text) {
+  if (!session) return;
+  let ex = session.cur;
+  if (!ex || ex.tDone) ex = newExchange();
+  if (!ex.tOpen) { ex.tOpen = true; if (!ex.sText.trim() && !ex.fixes.length) { anchor = ex.tNode; follow = true; } }
+  ex.tText += text;
+  renderTeacher(ex);
+  scrollEnd(false);
+}
+function closeTeacherLine(cut) {
+  if (!session) return;
+  const ex = session.cur;
+  if (!ex || ex.tDone) return;
+  if (!ex.tText.trim() && !ex.sText.trim() && !ex.fixes.length && !ex.words.length) return;
+  ex.tOpen = false;
+  ex.tDone = true;
+  ex.cut = !!cut && !!ex.tText.trim();
+  renderTeacher(ex);
+}
+function typedLine(text) {
+  const ex = newExchange();
+  ex.sText = text;
+  renderStudent(ex);
+  anchor = ex.sNode;
+  scrollEnd(true);
+}
+function sysLine(text) {
+  if (!session) return;
+  const node = h("p", { class: "sysline" }, text);
+  logEl.append(node);
+  if (session.cur) session.cur.tDone = true;
+  anchor = node;
+  scrollEnd(true);
+}
+function noteMistake(a) {
+  const fix = clip(a.correct, 300);
+  if (!session || !fix) return;
+  const item = { kind: /pron/i.test(String(a.kind || "")) ? "pronunciation" : /word/i.test(String(a.kind || "")) ? "word" : "grammar", said: clip(a.said, 300), fix, why: clip(a.why, 300) };
+  if (item.said && normText(item.said) === normText(item.fix) && item.kind !== "pronunciation") return;
+  let ex = session.cur;
+  if (!ex) ex = newExchange();
+  if (ex.fixes.some((f) => normText(f.fix) === normText(item.fix))) return;
+  ex.fixes.push(item);
+  renderStudent(ex);
+  session.fixes++;
+  const key = normText(item.said) + "|" + normText(item.fix);
+  store.mistakes = store.mistakes.filter((m) => normText(m.said) + "|" + normText(m.fix) !== key);
+  store.mistakes.unshift({ ...item, t: Date.now() });
+  if (store.mistakes.length > 150) store.mistakes.length = 150;
+  saveStore();
+  updateCounters();
+  scrollEnd(false);
+}
+function noteWord(a) {
+  const en = clip(a.en, 80);
+  const ru = clip(a.ru, 120);
+  if (!session || !en || !ru) return;
+  let ex = session.cur;
+  if (!ex) ex = newExchange();
+  if (!ex.words.some((w) => w.en.toLowerCase() === en.toLowerCase())) { ex.words.push({ en, ru }); renderTeacher(ex); }
+  const old = store.words.find((w) => w.en.toLowerCase() === en.toLowerCase());
+  if (old) old.n = (old.n || 1) + 1;
+  else { store.words.unshift({ en, ru, n: 1, t: Date.now() }); session.newWords++; if (store.words.length > 400) store.words.length = 400; }
+  saveStore();
+  updateCounters();
+  scrollEnd(false);
+}
+
+/* ================= setup card ================= */
+function optCard(group, id, title, desc) {
+  const on = store.settings[group] === id;
+  const input = h("input", { type: "radio", name: group, id: group + "-" + id, value: id });
+  input.checked = on;
+  input.addEventListener("change", () => {
+    store.settings[group] = id;
+    checkSettings();
+    saveStore();
+    renderSetup();
+    const again = document.getElementById(group + "-" + id);
+    if (again) again.focus();
+  });
+  return h("label", { class: "opt" + (on ? " on" : "") }, input, h("b", null, title), h("small", null, desc));
+}
+function paintTopics() {
+  const s = store.settings;
+  const custom = s.custom.trim();
+  topicBox.querySelectorAll(".topic").forEach((el) => {
+    const on = !custom && el.dataset.topic === s.topic;
+    el.classList.toggle("on", on);
+    el.querySelector("input").checked = on;
+  });
+}
+function renderSetup() {
+  const s = store.settings;
+  checkSettings();
+  renderKeyCard();
+  levelBox.replaceChildren(...Object.keys(LEVELS).map((id) => optCard("level", id, LEVELS[id].name, LEVELS[id].desc)));
+  modeBox.replaceChildren(...Object.keys(MODES).map((id) => optCard("mode", id, MODES[id].name, MODES[id].desc)));
+  topicBox.replaceChildren(...TOPICS[MODES[s.mode].topics].map((name, k) => {
+    const input = h("input", { type: "radio", name: "topic", id: "topic-" + k, value: name });
+    input.addEventListener("change", () => {
+      s.topic = name;
+      s.custom = "";
+      customInput.value = "";
+      saveStore();
+      paintTopics();
+    });
+    return h("label", { class: "topic", "data-topic": name }, input, name);
+  }));
+  if (document.activeElement !== customInput) customInput.value = s.custom;
+  customInput.placeholder = s.mode === "role" ? "Своя ситуация: например, собеседование" : "Своя тема: например, разговор с заказчиком";
+  paintTopics();
+  $("#set-headphones").checked = s.headphones;
+  if (lastSummary && lastSummary.talked) {
+    lastNote.textContent = "Прошлое занятие: " + lastSummary.minutes + " мин, поправок " + lastSummary.fixes + (lastSummary.words ? ", новых слов " + lastSummary.words : "") + ".";
+    lastNote.hidden = false;
+  } else {
+    lastNote.hidden = true;
+  }
+}
+let customTimer = null;
+customInput.addEventListener("input", () => {
+  store.settings.custom = customInput.value.slice(0, 100);
+  paintTopics();
+  clearTimeout(customTimer);
+  customTimer = setTimeout(saveStore, 600);
+});
+
+/* ================= dock ================= */
+function setBtn(btn, label, iconName) {
+  btn.hidden = !label;
+  if (label) btn.replaceChildren(iconName ? icon(iconName, 20) : "", h("span", null, label));
+}
+function phaseNow() {
+  if (!session) return "setup";
+  if (session.failed) return "failed";
+  if (!live.ready) return "connecting";
+  if (audio.ctx && audio.ctx.state !== "running") return "asleep";
+  if (session.paused) return "paused";
+  if (teacherSpeaking()) return "teacher";
+  return "listening";
+}
+function updateCounters() {
+  $("#n-words").textContent = String(store.words.length);
+  $("#n-mistakes").textContent = String(store.mistakes.length);
+}
+function updateUI() {
+  const ph = phaseNow();
+  document.body.dataset.phase = ph;
+  const inLesson = ph !== "setup";
+  stateEl.hidden = !inLesson;
+  lessonChip.hidden = !inLesson;
+  typeForm.hidden = !inLesson || ph === "failed";
+  quickEl.hidden = !(ph === "listening" || ph === "teacher" || ph === "paused");
+  mainBtn.classList.remove("alt");
+  mainBtn.disabled = false;
+  setBtn(pauseBtn, "", "");
+  setBtn(endBtn, inLesson ? "Закончить" : "", "stop");
+  orb.replaceChildren(icon(ph === "teacher" ? "sound" : ph === "paused" ? "pause" : "mic", 22));
+  if (ph === "setup") {
+    mainBtn.hidden = false;
+    if (store.key) setBtn(mainBtn, "Начать занятие", "play");
+    else { setBtn(mainBtn, "Сначала вставь ключ", ""); mainBtn.disabled = true; }
+  } else if (ph === "failed") {
+    setBtn(mainBtn, "Продолжить", "play");
+    stateTitle.textContent = "Занятие остановилось";
+    stateHint.textContent = session.failed === "key" ? "Проверь ключ в настройках." : "Причина записана в тетради выше.";
+    mainBtn.disabled = session.failed === "key" || session.failed === "region";
+  } else if (ph === "connecting") {
+    mainBtn.hidden = true;
+    stateTitle.textContent = session.started ? "Связь прервалась, возвращаюсь" : "Соединяюсь с учителем";
+    stateHint.textContent = session.started ? "Обычно это занимает пару секунд." : "Если браузер спросил про микрофон, нажми «Разрешить».";
+  } else if (ph === "asleep") {
+    setBtn(mainBtn, "Вернуть звук", "sound");
+    stateTitle.textContent = "Звук остановлен";
+    stateHint.textContent = "Телефон приглушил страницу. Нажми кнопку, чтобы продолжить.";
+  } else if (ph === "paused") {
+    setBtn(mainBtn, "Продолжить", "mic");
+    stateTitle.textContent = "Пауза";
+    stateHint.textContent = "Микрофон выключен, учитель ждёт.";
+  } else if (ph === "teacher") {
+    stateTitle.textContent = "Учитель говорит";
+    if (store.settings.headphones && audio.micOn) {
+      mainBtn.hidden = true;
+      stateHint.textContent = "Можно перебить голосом.";
+    } else {
+      setBtn(mainBtn, "Перебить", "hand");
+      mainBtn.classList.add("alt");
+      stateHint.textContent = audio.micOn ? "Микрофон ждёт, пока он договорит." : "Микрофона нет, отвечай текстом.";
+    }
+    setBtn(pauseBtn, audio.micOn ? "Пауза" : "", "pause");
+  } else {
+    mainBtn.hidden = true;
+    stateTitle.textContent = audio.micOn ? "Говори, я слушаю" : "Жду твой ответ";
+    stateHint.textContent = audio.micOn ? "Скажи фразу и замолчи: учитель ответит сам." : "Микрофона нет, напечатай ответ ниже.";
+    setBtn(pauseBtn, audio.micOn ? "Пауза" : "", "pause");
+  }
+  if (ph === "setup") { clockEl.textContent = ""; }
+  updateCounters();
+}
+function onMain() {
+  const ph = phaseNow();
+  if (ph === "setup") { startLesson(); return; }
+  try { ensureContext(); } catch (e) { /* no sound */ }
+  if (ph === "failed") { resumeLesson(); return; }
+  if (ph === "asleep") { setTimeout(updateUI, 300); return; }
+  if (ph === "paused") {
+    const go = () => { if (session) { session.paused = false; updateUI(); } };
+    if (!audio.micOn) startMic().then(go, () => { notify("Микрофон не включился. Можно печатать учителю."); go(); }); else go();
+    return;
+  }
+  if (ph === "teacher") {
+    flushPlayback();
+    audio.dropUntilTurnEnd = live.turnOpen;
+    if (session.cur) closeTeacherLine(true);
+    updateUI();
+  }
+}
+mainBtn.addEventListener("click", onMain);
+pauseBtn.addEventListener("click", () => {
+  if (!session || session.paused) return;
+  session.paused = true;
+  flushPlayback();
+  audio.dropUntilTurnEnd = live.turnOpen;
+  if (session.cur) closeTeacherLine(true);
+  sendJson({ realtimeInput: { audioStreamEnd: true } });
+  updateUI();
+});
+endBtn.addEventListener("click", endLesson);
+function sayTyped(text, show) {
+  if (!session || !live.ready) { notify("Учитель ещё не на связи. Подожди пару секунд.", 5000); return false; }
+  try { ensureContext(); } catch (e) { /* no sound */ }
+  flushPlayback();
+  audio.dropUntilTurnEnd = live.turnOpen;
+  if (session.cur) closeTeacherLine(true);
+  if (show) typedLine(text);
+  sendText(text);
+  updateUI();
+  return true;
+}
+quickEl.addEventListener("click", (e) => {
+  const btn = e.target instanceof Element ? e.target.closest("[data-say]") : null;
+  if (btn) sayTyped("(" + btn.dataset.say + ")", false);
+});
+typeForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = typeInput.value.replace(/\s+/g, " ").trim().slice(0, 1000);
+  if (!text) return;
+  if (sayTyped(text, true)) { typeInput.value = ""; growInput(); }
+});
+function growInput() {
+  typeInput.style.height = "auto";
+  typeInput.style.height = Math.min(96, typeInput.scrollHeight + 2) + "px";
+}
+typeInput.addEventListener("input", growInput);
+typeInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); typeForm.requestSubmit(); }
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" || !session) return;
+  keepAwake();
+  log("app", "back on screen, context " + (audio.ctx ? audio.ctx.state : "none") + ", socket " + (live.ws ? live.ws.readyState : "none"));
+});
+
+/* ================= dialogs ================= */
+function openDialog(d) {
+  try { d.showModal(); } catch (e) { d.setAttribute("open", ""); }
+}
+document.querySelectorAll("dialog").forEach((d) => {
+  d.addEventListener("click", (e) => { if (e.target === d) d.close(); });
+  d.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => d.close()));
+});
+const wordsDlg = $("#dlg-words");
+const mistakesDlg = $("#dlg-mistakes");
+const settingsDlg = $("#dlg-settings");
+
+function renderWords() {
+  const list = store.words;
+  $("#words-note").textContent = list.length
+    ? "Слова и фразы, которые учитель давал на занятиях."
+    : "Пока пусто. Слова появятся здесь, когда учитель начнёт давать новые фразы.";
+  $("#words-list").replaceChildren(...list.map((w) => h("li", { class: "row" },
+    h("div", { class: "row-main" }, h("b", { lang: "en" }, w.en), h("span", null, w.ru)),
+    h("button", {
+      type: "button", class: "ghost icon-only", "aria-label": "Убрать слово " + w.en,
+      onclick: () => { store.words = store.words.filter((x) => x !== w); saveStore(); renderWords(); updateCounters(); },
+    }, icon("close", 16)))));
+  $("#btn-train-words").disabled = list.length < 3 || !store.key;
+}
+function renderMistakes() {
+  const list = store.mistakes;
+  $("#mistakes-note").textContent = list.length
+    ? "Что учитель поправил. Нажми «Отработать ошибки», и он даст похожие предложения."
+    : "Пока пусто. Сюда попадут фразы и слова, которые учитель поправит.";
+  $("#mistakes-list").replaceChildren(...list.map((m) => {
+    const d = m.said && m.kind !== "pronunciation" ? diffWords(m.said, m.fix) : null;
+    return h("li", { class: "row" },
+      h("div", { class: "row-main" },
+        d ? h("p", { class: "said", lang: "en" }, spread(d.a, "del")) : null,
+        h("p", { class: "right", lang: "en" }, d ? spread(d.b, "ins") : (m.kind === "pronunciation" ? "Произношение: " : "") + m.fix),
+        m.why ? h("p", { class: "why" }, m.why) : null),
+      h("button", {
+        type: "button", class: "ghost icon-only", "aria-label": "Убрать эту запись",
+        onclick: () => { store.mistakes = store.mistakes.filter((x) => x !== m); saveStore(); renderMistakes(); updateCounters(); },
+      }, icon("close", 16)));
+  }));
+  $("#btn-train-mistakes").disabled = !list.length || !store.key;
+}
+function sampleOf(list, n) {
+  const copy = list.slice();
+  for (let k = copy.length - 1; k > 0; k--) {
+    const r = Math.floor(Math.random() * (k + 1));
+    [copy[k], copy[r]] = [copy[r], copy[k]];
+  }
+  return copy.slice(0, n);
+}
+$("#btn-words").addEventListener("click", () => { renderWords(); openDialog(wordsDlg); });
+$("#btn-mistakes").addEventListener("click", () => { renderMistakes(); openDialog(mistakesDlg); });
+$("#btn-train-words").addEventListener("click", () => {
+  if (store.words.length < 3 || !store.key) return;
+  wordsDlg.close();
+  endLesson();
+  startLesson({ mode: "drill", topic: "Мой словарь", focus: { kind: "words", items: sampleOf(store.words, 18) } });
+});
+$("#btn-train-mistakes").addEventListener("click", () => {
+  if (!store.mistakes.length || !store.key) return;
+  mistakesDlg.close();
+  endLesson();
+  startLesson({ mode: "drill", topic: "Работа над ошибками", focus: { kind: "mistakes", items: store.mistakes.slice(0, 10) } });
+});
+
+/* ----- settings ----- */
+const setVoice = $("#set-voice");
+const setPatience = $("#set-patience");
+const setHead = $("#set-headphones");
+const setHead2 = $("#set-headphones-2");
+const setNotes = $("#set-notes");
+setVoice.replaceChildren(...Object.keys(VOICES).map((id) => h("option", { value: id }, VOICES[id])));
+function syncSettings() {
+  const s = store.settings;
+  setVoice.value = s.voice;
+  setPatience.value = String(s.patience);
+  setHead.checked = s.headphones;
+  setHead2.checked = s.headphones;
+  setNotes.checked = s.notes;
+  renderKeyCard();
+  $("#journal").textContent = journal.join("\n");
+}
+$("#btn-settings").addEventListener("click", () => {
+  syncSettings();
+  openDialog(settingsDlg);
+  const box = $("#journal");
+  box.textContent = journal.join("\n");
+  box.scrollTop = box.scrollHeight;
+});
+setVoice.addEventListener("change", () => { store.settings.voice = setVoice.value; checkSettings(); saveStore(); });
+setPatience.addEventListener("change", () => { store.settings.patience = Number(setPatience.value) || 1300; checkSettings(); saveStore(); });
+function setHeadphones(on) {
+  store.settings.headphones = !!on;
+  setHead.checked = setHead2.checked = !!on;
+  saveStore();
+  updateUI();
+}
+setHead.addEventListener("change", () => setHeadphones(setHead.checked));
+setHead2.addEventListener("change", () => setHeadphones(setHead2.checked));
+setNotes.addEventListener("change", () => { store.settings.notes = setNotes.checked; saveStore(); });
+$("#btn-copy-journal").addEventListener("click", async () => {
+  const text = "Говори по-английски, журнал\n" + navigator.userAgent + "\n" + journal.join("\n");
+  const out = $("#copy-state");
+  try {
+    await navigator.clipboard.writeText(text);
+    out.textContent = "Скопировано.";
+  } catch (e) {
+    const box = $("#journal");
+    const range = document.createRange();
+    range.selectNodeContents(box);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    out.textContent = "Журнал выделен: скопируй его вручную.";
+  }
+});
+
+/* ================= start ================= */
+loadStore();
+renderSetup();
+syncSettings();
+updateUI();
+log("app", "ready" + (LOCAL && testApi ? ", test server " + testApi : "") + ", key " + (store.key ? "saved" : "missing"));
+if (store.key) checkKey(store.key).then((res) => {
+  if (res.ok) adoptModels(res.names);
+  else if (res.ok === false && res.kind === "key") { log("key", "saved key rejected: " + res.text); notify(FAIL_TEXT.key, 0); }
+  else log("key", "check skipped: " + res.text);
+});
+if (LOCAL) window.__govori = { live, audio, store, journal, get session() { return session; } };
+window.addEventListener("error", (e) => log("error", (e && e.message) || "script error"));
+window.addEventListener("unhandledrejection", (e) => log("error", "promise: " + ((e && e.reason && (e.reason.message || e.reason.code)) || e.reason)));
+})();
+</script>
+</body>
+</html>
